@@ -1,0 +1,38 @@
+# 视频字幕翻译工具依赖
+# 安装命令: pip install -r requirements.txt
+# 环境要求: Python 3.11 + conda 环境 fastwhisper
+
+# ===================
+# 核心依赖 (必须)
+# ===================
+pyyaml>=6.0
+openai>=1.0.0
+requests>=2.31.0
+yt-dlp>=2024.0.0
+
+# ===================
+# faster-whisper (语音转录)
+# ===================
+# faster-whisper 需要单独安装，参考: https://github.com/SYSTRON/faster-whisper
+# 方式1: pip install faster-whisper
+# 方式2: 在 transcription/whisper.py 中配置外部 faster-whisper 路径
+
+# ===================
+# CUDA 加速依赖 (可选)
+# ===================
+# 如需使用 GPU 加速，请安装以下依赖:
+# nvidia-cublas-cu12
+# nvidia-cudnn-cu12
+
+# ===================
+# 可选依赖
+# ===================
+# ffmpeg-python>=0.2.0  # 如果需要用 Python 调用 ffmpeg
+# moviepy>=1.0.3       # 视频处理
+# ollama>=0.1.0         # 本地 LLM
+
+# ===================
+# 测试 (可选)
+# ===================
+# pytest>=7.0.0
+# pytest-asyncio>=0.21.0

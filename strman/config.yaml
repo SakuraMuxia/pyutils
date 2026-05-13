@@ -1,0 +1,127 @@
+# 视频字幕翻译项目配置
+
+# ===================
+# Fast-Whisper 配置
+# https://huggingface.co/Systran/faster-whisper-large-v3/tree/main
+# ===================
+whisper:
+  model_path: "G:\\fastwhisper-model"  # 模型路径 Hugging Face 上的模型（CTranslate2格式）必须下载 large-v3 
+  device: "cuda"                       # cuda 或 cpu 
+  compute_type: "float16"              # float16, int8, int8_float16 
+  language: null                      # 指定语言，null则自动检测 
+  initial_prompt: ""                   # 自定义提示词
+
+# ===================
+# LLM 翻译配置
+# ===================
+llm:
+  # 翻译服务类型: openai, ollama, vllm
+  provider: "openai"
+  
+  # OpenAI 兼容配置
+  openai:
+    base_url: "http://192.168.1.11:9090/v1"  # API地址
+    api_key: "123123" # API密钥
+    model: "gemma-4-26B-A4B-it-uncensored-heretic-Q4_K_S-llmfan46.gguf"                       # 模型名称
+    # model: "llama3"                        #或其他模型
+    
+  # 或使用本地 Ollama
+  # ollama:
+  #   base_url: "http://localhost:11434"
+  #   model: "qwen2.5"
+
+  # 翻译参数
+  temperature: 0.6
+  max_tokens: 4096
+  batch_size: 20                      # 每次翻译的字幕条数
+
+# ===================
+# FFmpeg 配置
+# ===================
+ffmpeg:
+  # 音频提取参数
+  audio_extraction:
+    format: "wav"
+    sample_rate: 16000
+    channels: 1                      # 单声道
+    codec: "pcm_s16le"
+    # 可选：降噪处理
+    # af: "highpass=f=100, lowpass=f=8000, loudnorm"
+
+# ===================
+# 字幕格式配置
+# ===================
+subtitle:
+  # 输出格式: srt, vtt, ass
+  format: "srt"
+
+  # 双语字幕分隔符
+  # 示例: "Hello world|你好世界" 或 "Hello world\n你好世界"
+  separator: "\n"
+
+  # 是否在每行显示语言标签 (如 [EN] / [中])
+  show_language_tag: false
+  original_tag: "[Original]"
+  translated_tag: "[翻译]"
+
+# ===================
+# 输出配置
+# ===================
+output:
+  # 输出根目录
+  directory: "output"
+
+  # 输出子目录
+  original_dir: "original"      # 原文字幕
+  bilingual_dir: "bilingual"   # 双语字幕
+  summary_text_dir: "summary_text"  # 字幕文本总结
+  summary_video_dir: "summary_video" # 视觉+字幕联合总结
+
+  # 临时文件目录 (下载的视频/音频)
+  temp_directory: "temp"
+
+  # 输出文件名模板
+  # {input} = 输入文件名
+  filename_template: "{input}"
+
+  # 字幕后缀
+  subtitle_suffix: ".srt"
+
+# ===================
+# B站视频下载配置
+# ===================
+bilibili:
+  # 使用 you-get 或 yt-dlp 下载
+  # 安装: pip install you-get 或 pip install yt-dlp
+  tool: "yt-dlp"  # you-get 或 yt-dlp
+
+  # 下载视频质量 (best, 1080p, 720p, etc.)
+  # 注意：yt-dlp 建议不指定，使用最佳可用格式
+  quality: "best"
+
+  # 是否删除临时文件（视频和音频在任务完成后删除）
+  cleanup_temp: true
+
+# ===================
+# 视频总结配置
+# ===================
+summary:
+  # 是否自动生成总结
+  enabled: false
+
+  # 总结的语言
+  language: "中文"
+
+  # LLM 生成摘要的最大token数
+  # 根据视频长度调整，2分钟视频约需要 2000-4000 tokens
+  max_tokens: 8192
+
+  # 输出文件名模板
+  filename_template: "{input}_笔记"
+
+# ===================
+# 日志配置
+# ===================
+log:
+  level: "INFO"                       # DEBUG, INFO, WARNING, ERROR
+  show_progress: true                 # 显示进度条
