@@ -1,5 +1,40 @@
-# strMan 打包脚本
-# 运行: python pack.py
+# ============================================================
+# 用户配置区域 - 请在这里修改路径
+# ============================================================
+
+# 临时目录位置 (不要放在C盘)
+# 示例: "D:\\Temp\\strMan-temp" 或 "E:\\temp\\strMan-pack-temp"
+USER_TEMP_DIR = "D:\\Temp\\strMan-temp"  # None = 使用默认 (TEMP环境变量下的strMan-temp-时间戳)
+
+# 输出目录位置 (不要放在本目录)
+# 示例: "E:\\output\\strMan-portable" 或 "D:\\portable\\strMan"
+USER_OUTPUT_DIR = r"D:\output\strMan-portable-v2"  # None = 使用默认 (源码目录的上一级)
+
+# 是否包含 Python 环境
+INCLUDE_PYTHON = True
+
+# 是否包含模型
+INCLUDE_MODELS = True
+
+# 是否包含 CUDA
+INCLUDE_CUDA = True
+
+# ============================================================
+# 源码路径配置 (根据你的实际情况修改)
+# ============================================================
+
+# conda python 环境路径
+PYTHON_SRC = r"C:\Users\mengxi\.conda\envs\fastwhisper"
+
+# fastwhisper 模块路径
+FASTWHISPER_MODULE_SRC = r"G:\fastwhisper-res\fastwhisper\fastwhisper"
+
+# 模型目录路径
+MODEL_SRC = r"G:\fastwhisper-res\fastwhisper-model"
+
+# ============================================================
+# 以下为打包脚本内部逻辑，请勿修改
+# ============================================================
 
 import os
 import shutil
@@ -14,18 +49,22 @@ print()
 # 配置
 SOURCE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_NAME = "strMan-portable"
-PACK_DIR = os.path.join(os.path.dirname(SOURCE_DIR), PROJECT_NAME)
 
-# 使用带时间戳的临时目录避免冲突
-TEMP_DIR = os.path.join(os.environ.get("TEMP", "D:\\Temp"), f"strMan-temp-{datetime.now().strftime('%Y%m%d%H%M%S')}")
+# 使用用户配置的临时目录，或使用默认
+if USER_TEMP_DIR:
+    TEMP_DIR = os.path.join(USER_TEMP_DIR, f"strMan-temp-{datetime.now().strftime('%Y%m%d%H%M%S')}")
+else:
+    TEMP_DIR = os.path.join(os.environ.get("TEMP", "D:\\Temp"), f"strMan-temp-{datetime.now().strftime('%Y%m%d%H%M%S')}")
 
-# 打包选项
-INCLUDE_PYTHON = True
-INCLUDE_MODELS = True
-INCLUDE_CUDA = True
+# 使用用户配置的输出目录，或使用默认
+if USER_OUTPUT_DIR:
+    PACK_DIR = USER_OUTPUT_DIR
+else:
+    PACK_DIR = os.path.join(os.path.dirname(SOURCE_DIR), PROJECT_NAME)
 
 print(f"Source: {SOURCE_DIR}")
-print(f"Pack to: {TEMP_DIR}")
+print(f"Temp: {TEMP_DIR}")
+print(f"Pack to: {PACK_DIR}")
 print()
 
 # 路径配置
@@ -70,10 +109,11 @@ if os.path.exists(config_path):
     with open(config_path, "r", encoding="utf-8") as f:
         content = f.read()
     
-    # 替换绝对路径为相对路径
-    content = content.replace(r"G:\\fastwhisper-res\\fastwhisper-model", "..\\models")
-    content = content.replace(r"G:\\fastwhisper-res\\fastwhisper\\fastwhisper", "..\\python\\fastwhisper")
-    content = content.replace(r"C:\\Users\\mengxi\\.conda\\envs\\fastwhisper", "..\\cuda")
+    # 替换绝对路径为相对路径 (双反斜杠避免 YAML 转义问题)
+    # 原始路径替换后，需要用双反斜杠，否则 YAML 双引号会把 \p 当成转义字符
+    content = content.replace(r"G:\\fastwhisper-res\\fastwhisper-model", r"..\\models")
+    content = content.replace(r"G:\\fastwhisper-res\\fastwhisper\\fastwhisper", r"..\\python\\fastwhisper")
+    content = content.replace(r"C:\\Users\\mengxi\\.conda\\envs\\fastwhisper", r"..\\cuda")
     
     with open(config_path, "w", encoding="utf-8") as f:
         f.write(content)
@@ -203,8 +243,16 @@ print()
 
 # 移动到最终位置
 print("Moving to final location...")
+
+import stat
+
+def remove_readonly(func, path, exc):
+    """强制删除只读文件"""
+    os.chmod(path, stat.S_IWRITE)
+    func(path)
+
 if os.path.exists(PACK_DIR):
-    shutil.rmtree(PACK_DIR)
+    shutil.rmtree(PACK_DIR, onerror=remove_readonly)
 shutil.move(TEMP_DIR, PACK_DIR)
 
 # 完成
