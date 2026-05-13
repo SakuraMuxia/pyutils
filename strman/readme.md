@@ -191,6 +191,7 @@ run.bat "https://www.bilibili.com/video/BVxxx"
 ```bash
 # 处理本地视频
 python main.py video.mp4
+python main.py "C:\Users\mengxi\Downloads\1233.mp4" --only-subtitle
 
 # 处理B站视频
 python main.py https://www.bilibili.com/video/BV1AV576bEf2
@@ -283,34 +284,6 @@ RTX 4060 Ti (16GB VRAM):
 - 推荐: `compute_type: "float16"`, `device: "cuda"`
 - 大模型 + float16: ~2GB VRAM
 - 中模型 + float16: ~1GB VRAM
-
-## 常见问题
-
-### Q: 找不到 faster_whisper 模块
-
-A: 在 `src/transcription/whisper.py` 中修改路径:
-```python
-sys.path.append(r"E:\voiceAi\fastwhisper")
-```
-
-### Q: 翻译结果包含思考内容
-
-A: 使用 `reasoning_split=True` (已在代码中配置)
-
-### Q: B站视频下载失败
-
-A: 确保 yt-dlp 已安装:
-```bash
-pip install yt-dlp
-```
-
-### Q: 显存不足
-
-A: 修改 config.yaml:
-```yaml
-whisper:
-  compute_type: "int8"  # 可选 int8, float16
-```
 
 ## 项目后续计划
 

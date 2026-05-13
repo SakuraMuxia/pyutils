@@ -27,8 +27,8 @@ yt-dlp>=2024.0.0
 # ===================
 # 可选依赖
 # ===================
-# ffmpeg-python>=0.2.0  # 如果需要用 Python 调用 ffmpeg
-# moviepy>=1.0.3       # 视频处理
+ffmpeg-python>=0.2.0  # 如果需要用 Python 调用 ffmpeg
+moviepy>=1.0.3       # 视频处理
 # ollama>=0.1.0         # 本地 LLM
 
 # ===================

@@ -2,10 +2,8 @@
 Fast-Whisper Transcription Module
 使用 faster-whisper 进行语音转文字
 """
-# 添加 faster-whisper 模块路径
 import os
 import sys
-sys.path.append(r"E:\voiceAi\fastwhisper")
 import logging
 from dataclasses import dataclass
 from typing import Iterator
@@ -32,13 +30,15 @@ LANGUAGE_PROMPTS = {
 }
 
 
-def fix_cuda_path():
-    """修复 Windows 下 CUDA DLL 路径"""
-    # 路径根据你之前的报错信息设定
-    env_path = r"C:\Users\mengxi\.conda\envs\fastwhisper"
+def fix_cuda_path(cuda_env_path: str):
+    """修复 Windows 下 CUDA DLL 路径
+    
+    Args:
+        cuda_env_path: CUDA 环境路径 (conda 环境目录)
+    """
     dll_folders = [
-        os.path.join(env_path, r"Lib\site-packages\nvidia\cublas\bin"),
-        os.path.join(env_path, r"Lib\site-packages\nvidia\cudnn\bin")
+        os.path.join(cuda_env_path, r"Lib\site-packages\nvidia\cublas\bin"),
+        os.path.join(cuda_env_path, r"Lib\site-packages\nvidia\cudnn\bin")
     ]
     
     for folder in dll_folders:
@@ -70,21 +70,40 @@ class WhisperTranscriber:
         初始化转录器
         
         Args:
-            config: whisper配置
+            config: 配置文件 (包含 whisper, runtime 配置)
         """
         self.config = config.get('whisper', {})
-        self.model_path = self.model_path = self.config.get('model_path', 'G:\\fastwhisper-model')
+        self.runtime_config = config.get('runtime', {})
+        
+        self.model_path = self.config.get('model_path', 'G:\\fastwhisper-model')
         self.device = self.config.get('device', 'cuda')
         self.compute_type = self.config.get('compute_type', 'float16')
         self.language = self.config.get('language', None)
         self.initial_prompt = self.config.get('initial_prompt', '')
         
-        # 延迟导入，确保 DLL 路径已修复
-        fix_cuda_path()
+        # 从配置读取路径
+        self.fastwhisper_module_path = self.runtime_config.get('fastwhisper_module_path', '')
+        self.cuda_env_path = self.runtime_config.get('cuda_env_path', r"C:\Users\mengxi\.conda\envs\fastwhisper")
+        
+        # 添加模块路径并修复 CUDA DLL
+        self._setup_paths()
+        
+        # 延迟导入，确保路径已设置
         from faster_whisper import WhisperModel
         self.WhisperModel = WhisperModel
         
         self.model = None
+    
+    def _setup_paths(self):
+        """设置运行时路径"""
+        # 添加 faster-whisper 模块路径
+        if self.fastwhisper_module_path:
+            if os.path.exists(self.fastwhisper_module_path):
+                sys.path.insert(0, self.fastwhisper_module_path)
+                logger.info(f"Added fastwhisper module path: {self.fastwhisper_module_path}")
+        
+        # 修复 CUDA DLL 路径
+        fix_cuda_path(self.cuda_env_path)
     
     def load_model(self):
         """加载模型"""

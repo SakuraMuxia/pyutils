@@ -1,11 +1,23 @@
 # 视频字幕翻译项目配置
 
 # ===================
+# 运行时环境配置
+# ===================
+runtime:
+  # Faster-Whisper 模块路径 (用于导入 faster_whisper)
+  # 例如: "G:\fastwhisper-res\fastwhisper\fastwhisper"
+  fastwhisper_module_path: "G:\\fastwhisper-res\\fastwhisper\\fastwhisper"
+
+  # CUDA 环境路径 (用于加载 NVIDIA DLL)
+  # 例如: "C:\Users\mengxi\.conda\envs\fastwhisper"
+  cuda_env_path: "C:\\Users\\mengxi\\.conda\\envs\\fastwhisper"
+
+# ===================
 # Fast-Whisper 配置
 # https://huggingface.co/Systran/faster-whisper-large-v3/tree/main
 # ===================
 whisper:
-  model_path: "G:\\fastwhisper-model"  # 模型路径 Hugging Face 上的模型（CTranslate2格式）必须下载 large-v3 
+  model_path: "G:\\fastwhisper-res\\fastwhisper-model"  # 模型路径 Hugging Face 上的模型（CTranslate2格式）必须下载 large-v3 
   device: "cuda"                       # cuda 或 cpu 
   compute_type: "float16"              # float16, int8, int8_float16 
   language: null                      # 指定语言，null则自动检测 
