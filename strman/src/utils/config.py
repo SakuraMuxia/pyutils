@@ -15,9 +15,34 @@ logger = logging.getLogger(__name__)
 _config: dict = {}
 
 
-def load_config(config_path: str | None = None) -> dict:
+def resolve_relative_path(config_path: str | None, relative_path: str) -> str:
+    """将相对路径转换为绝对路径
+    
+    Args:
+        config_path: 配置文件路径
+        relative_path: 相对路径
+        
+    Returns:
+        绝对路径
     """
-    加载配置文件
+    if not relative_path:
+        return relative_path
+    
+    # 如果已经是绝对路径，直接返回
+    if os.path.isabs(relative_path):
+        return relative_path
+    
+    # 基于配置文件位置解析
+    if config_path:
+        config_dir = os.path.dirname(os.path.abspath(config_path))
+        return os.path.normpath(os.path.join(config_dir, relative_path))
+    
+    # 基于当前工作目录
+    return os.path.abspath(relative_path)
+
+
+def load_config(config_path: str | None = None) -> dict:
+    """加载配置文件
     
     Args:
         config_path: 配置文件路径
@@ -52,7 +77,29 @@ def load_config(config_path: str | None = None) -> dict:
     with open(config_path, 'r', encoding='utf-8') as f:
         _config = yaml.safe_load(f) or {}
     
+    # 转换相对路径为绝对路径
+    _resolve_paths(_config, config_path)
+    
     return _config
+
+
+def _resolve_paths(config: dict, config_path: str):
+    """递归转换配置中的相对路径为绝对路径"""
+    config_dir = os.path.dirname(os.path.abspath(config_path))
+    
+    # runtime 配置
+    if 'runtime' in config:
+        runtime = config['runtime']
+        if 'fastwhisper_module_path' in runtime:
+            runtime['fastwhisper_module_path'] = resolve_relative_path(config_path, runtime['fastwhisper_module_path'])
+        if 'cuda_env_path' in runtime:
+            runtime['cuda_env_path'] = resolve_relative_path(config_path, runtime['cuda_env_path'])
+    
+    # whisper 配置 - model_path
+    if 'whisper' in config:
+        whisper = config['whisper']
+        if 'model_path' in whisper:
+            whisper['model_path'] = resolve_relative_path(config_path, whisper['model_path'])
 
 
 def get_config() -> dict:

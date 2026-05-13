@@ -206,6 +206,7 @@ python main.py video.mp4 --only-subtitle
 
 # 生成视频总结
 python main.py video.mp4 --summary
+python main.py "C:\Users\mengxi\Downloads\1233.mp4" --summary
 ```
 
 ### 命令行参数
